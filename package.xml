@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>nuitrack_body_tracker</name>
+  <name>nuitrack_ros_wrapper</name>
   <version>0.0.0</version>
-  <description>a body_tracker package for nuitrack SDK</description>
-  <maintainer email="shinsel.robots@gmail.com">Dave Shinsel</maintainer>
+  <description>A Ros wrapper for the Nuitrack SDK body_tracker package</description>
+  <maintainer email="maxolevonwaldow@gmail.com">Max-Ole von Waldow</maintainer>
   <license>TODO</license>
   <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
 

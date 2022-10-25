@@ -1,12 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(nuitrack_body_tracker)
+project(nuitrack_ros_wrapper)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
 
 # For nuitrack
 # add_compile_options(-std=c++11 -D_GLIBCXX_USE_CXX11_ABI=0)
-set(NUITRACK_SDK_PATH /home/system/sdk/NuitrackSDK) 
+# CATKIN COULD NOT COMPILE THIS. Replace with own installation path. FIX from https://github.com/shinselrobots/nuitrack_body_tracker/issues/2
+#/home/system/sdk/NuitrackSDK
+set(NUITRACK_SDK_PATH /home/rob/SDKs/nuitrack-sdk)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -146,7 +148,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(${PROJECT_NAME}_node src/nuitrack_body_tracker_node.cpp)
+add_executable(nuitrack_ros_wrapper src/nuitrack_ros_wrapper.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -156,7 +158,7 @@ add_executable(${PROJECT_NAME}_node src/nuitrack_body_tracker_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(nuitrack_ros_wrapper ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 
@@ -164,7 +166,7 @@ add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catk
 
 
 target_link_libraries(
-  ${PROJECT_NAME}_node
+  nuitrack_ros_wrapper
   ${NUITRACK_SDK_PATH}/Nuitrack/lib/linux64/libnuitrack.so
   ${NUITRACK_SDK_PATH}/Nuitrack/lib/linux64/libmiddleware.so
   ${catkin_LIBRARIES}

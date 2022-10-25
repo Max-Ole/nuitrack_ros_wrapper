@@ -50,7 +50,7 @@
 
 // If Camera mounted on Pan/Tilt head
 //#include "sensor_msgs/JointState.h"
-#include "dynamixel_msgs/JointState.h"
+//#include "dynamixel_msgs/JointState.h" // CATKIN COULD NOT COMPILE THIS. FIX from https://github.com/shinselrobots/nuitrack_body_tracker/issues/9
 
 //For Nuitrack SDK
 #include "nuitrack/Nuitrack.h"
@@ -525,7 +525,6 @@ namespace nuitrack_body_tracker
 
         // skeleton_data.frame_id = camera_depth_frame_;
         skeleton_data.body_id = skeleton.id;
-        skeleton_data.tracking_status = 0; // TODO
 
         //skeleton_data.centerOfMass.x = 0.0;
         //skeleton_data.centerOfMass.y = 0.0;
@@ -555,37 +554,37 @@ namespace nuitrack_body_tracker
         skeleton_data.joint_pos_3d_head.x = skeleton.joints[JOINT_HEAD].real.z * unit_scaling;
         skeleton_data.joint_pos_3d_head.y = skeleton.joints[JOINT_HEAD].real.x * unit_scaling;
         skeleton_data.joint_pos_3d_head.z = skeleton.joints[JOINT_HEAD].real.y * unit_scaling;
-		skeleton_data.joint_pos_2d_head.x = skeleton.joints[JOINT_HEAD].proj.z * unit_scaling;
+        skeleton_data.joint_pos_2d_head.x = skeleton.joints[JOINT_HEAD].proj.z * unit_scaling;
         skeleton_data.joint_pos_2d_head.y = skeleton.joints[JOINT_HEAD].proj.x * unit_scaling;
         skeleton_data.joint_pos_2d_head.z = skeleton.joints[JOINT_HEAD].proj.y * unit_scaling;
 
         skeleton_data.joint_pos_3d_neck.x = skeleton.joints[JOINT_NECK].real.z * unit_scaling;
         skeleton_data.joint_pos_3d_neck.y = skeleton.joints[JOINT_NECK].real.x * unit_scaling;
         skeleton_data.joint_pos_3d_neck.z = skeleton.joints[JOINT_NECK].real.y * unit_scaling;
-		skeleton_data.joint_pos_2d_neck.x = skeleton.joints[JOINT_NECK].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_neck.x = skeleton.joints[JOINT_NECK].proj.x * unit_scaling;
         skeleton_data.joint_pos_2d_neck.y = skeleton.joints[JOINT_NECK].proj.y * unit_scaling;
         skeleton_data.joint_pos_2d_neck.z = skeleton.joints[JOINT_NECK].proj.z * unit_scaling;
 		
-        skeleton_data.joint_pos_3d_spine_top.x = skeleton.joints[JOINT_TORSO].real.z * unit_scaling;
-        skeleton_data.joint_pos_3d_spine_top.y = skeleton.joints[JOINT_TORSO].real.x * unit_scaling;
-        skeleton_data.joint_pos_3d_spine_top.z = skeleton.joints[JOINT_TORSO].real.y * unit_scaling;
-        skeleton_data.joint_pos_2d_spine_top.x = skeleton.joints[JOINT_TORSO].proj.x * unit_scaling;
-        skeleton_data.joint_pos_2d_spine_top.y = skeleton.joints[JOINT_TORSO].proj.y * unit_scaling;
-        skeleton_data.joint_pos_2d_spine_top.z = skeleton.joints[JOINT_TORSO].proj.z * unit_scaling;
+        skeleton_data.joint_pos_3d_torso.x = skeleton.joints[JOINT_TORSO].real.z * unit_scaling;
+        skeleton_data.joint_pos_3d_torso.y = skeleton.joints[JOINT_TORSO].real.x * unit_scaling;
+        skeleton_data.joint_pos_3d_torso.z = skeleton.joints[JOINT_TORSO].real.y * unit_scaling;
+        skeleton_data.joint_pos_2d_torso.x = skeleton.joints[JOINT_TORSO].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_torso.y = skeleton.joints[JOINT_TORSO].proj.y * unit_scaling;
+        skeleton_data.joint_pos_2d_torso.z = skeleton.joints[JOINT_TORSO].proj.z * unit_scaling;
 
-        skeleton_data.joint_pos_3d_spine_mid.x = skeleton.joints[JOINT_WAIST].real.z * unit_scaling;
-        skeleton_data.joint_pos_3d_spine_mid.y = skeleton.joints[JOINT_WAIST].real.x * unit_scaling;
-        skeleton_data.joint_pos_3d_spine_mid.z = skeleton.joints[JOINT_WAIST].real.y * unit_scaling;
-        skeleton_data.joint_pos_2d_spine_mid.x = skeleton.joints[JOINT_WAIST].proj.x * unit_scaling;
-        skeleton_data.joint_pos_2d_spine_mid.y = skeleton.joints[JOINT_WAIST].proj.y * unit_scaling;
-        skeleton_data.joint_pos_2d_spine_mid.z = skeleton.joints[JOINT_WAIST].proj.z * unit_scaling;
+        skeleton_data.joint_pos_3d_waist.x = skeleton.joints[JOINT_WAIST].real.z * unit_scaling;
+        skeleton_data.joint_pos_3d_waist.y = skeleton.joints[JOINT_WAIST].real.x * unit_scaling;
+        skeleton_data.joint_pos_3d_waist.z = skeleton.joints[JOINT_WAIST].real.y * unit_scaling;
+        skeleton_data.joint_pos_2d_waist.x = skeleton.joints[JOINT_WAIST].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_waist.y = skeleton.joints[JOINT_WAIST].proj.y * unit_scaling;
+        skeleton_data.joint_pos_2d_waist.z = skeleton.joints[JOINT_WAIST].proj.z * unit_scaling;
 
-        skeleton_data.joint_pos_3d_spine_bottom.x = 0.0;  // Why different?
-        skeleton_data.joint_pos_3d_spine_bottom.y = 0.0;
-        skeleton_data.joint_pos_3d_spine_bottom.z = 0.0;
-        skeleton_data.joint_pos_2d_spine_bottom.x = 0.0;
-        skeleton_data.joint_pos_2d_spine_bottom.y = 0.0;
-        skeleton_data.joint_pos_2d_spine_bottom.z = 0.0;
+        skeleton_data.joint_pos_3d_left_collar.x = skeleton.joints[JOINT_LEFT_COLLAR].real.z * unit_scaling;
+        skeleton_data.joint_pos_3d_left_collar.y = skeleton.joints[JOINT_LEFT_COLLAR].real.x * unit_scaling;
+        skeleton_data.joint_pos_3d_left_collar.z = skeleton.joints[JOINT_LEFT_COLLAR].real.y * unit_scaling;
+        skeleton_data.joint_pos_2d_left_collar.x = skeleton.joints[JOINT_LEFT_COLLAR].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_left_collar.y = skeleton.joints[JOINT_LEFT_COLLAR].proj.y * unit_scaling;
+        skeleton_data.joint_pos_2d_left_collar.z = skeleton.joints[JOINT_LEFT_COLLAR].proj.z * unit_scaling;
 
         skeleton_data.joint_pos_3d_left_shoulder.x = skeleton.joints[JOINT_LEFT_SHOULDER].real.z * unit_scaling;
         skeleton_data.joint_pos_3d_left_shoulder.y = skeleton.joints[JOINT_LEFT_SHOULDER].real.x * unit_scaling;
@@ -601,12 +600,27 @@ namespace nuitrack_body_tracker
         skeleton_data.joint_pos_2d_left_elbow.y = skeleton.joints[JOINT_LEFT_ELBOW].proj.y * unit_scaling;
         skeleton_data.joint_pos_2d_left_elbow.z = skeleton.joints[JOINT_LEFT_ELBOW].proj.z * unit_scaling;
 
+        skeleton_data.joint_pos_3d_left_wrist.x = skeleton.joints[JOINT_LEFT_WRIST].real.z * unit_scaling;
+        skeleton_data.joint_pos_3d_left_wrist.y = skeleton.joints[JOINT_LEFT_WRIST].real.x * unit_scaling;
+        skeleton_data.joint_pos_3d_left_wrist.z = skeleton.joints[JOINT_LEFT_WRIST].real.y * unit_scaling;
+        skeleton_data.joint_pos_2d_left_wrist.x = skeleton.joints[JOINT_LEFT_WRIST].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_left_wrist.y = skeleton.joints[JOINT_LEFT_WRIST].proj.y * unit_scaling;
+        skeleton_data.joint_pos_2d_left_wrist.z = skeleton.joints[JOINT_LEFT_WRIST].proj.z * unit_scaling;
+
         skeleton_data.joint_pos_3d_left_hand.x = skeleton.joints[JOINT_LEFT_HAND].real.z * unit_scaling;
         skeleton_data.joint_pos_3d_left_hand.y = skeleton.joints[JOINT_LEFT_HAND].real.x * unit_scaling;
         skeleton_data.joint_pos_3d_left_hand.z = skeleton.joints[JOINT_LEFT_HAND].real.y * unit_scaling;
         skeleton_data.joint_pos_2d_left_hand.x = skeleton.joints[JOINT_LEFT_HAND].proj.x * unit_scaling;
         skeleton_data.joint_pos_2d_left_hand.y = skeleton.joints[JOINT_LEFT_HAND].proj.y * unit_scaling;
         skeleton_data.joint_pos_2d_left_hand.z = skeleton.joints[JOINT_LEFT_HAND].proj.z * unit_scaling;
+
+
+        skeleton_data.joint_pos_3d_right_collar.x = skeleton.joints[JOINT_RIGHT_COLLAR].real.z * unit_scaling;
+        skeleton_data.joint_pos_3d_right_collar.y = skeleton.joints[JOINT_RIGHT_COLLAR].real.x * unit_scaling;
+        skeleton_data.joint_pos_3d_right_collar.z = skeleton.joints[JOINT_RIGHT_COLLAR].real.y * unit_scaling;
+        skeleton_data.joint_pos_2d_right_collar.x = skeleton.joints[JOINT_RIGHT_COLLAR].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_right_collar.y = skeleton.joints[JOINT_RIGHT_COLLAR].proj.y * unit_scaling;
+        skeleton_data.joint_pos_2d_right_collar.z = skeleton.joints[JOINT_RIGHT_COLLAR].proj.z * unit_scaling;
 
         skeleton_data.joint_pos_3d_right_shoulder.x = skeleton.joints[JOINT_RIGHT_SHOULDER].real.z * unit_scaling;
         skeleton_data.joint_pos_3d_right_shoulder.y = skeleton.joints[JOINT_RIGHT_SHOULDER].real.x * unit_scaling;
@@ -622,13 +636,68 @@ namespace nuitrack_body_tracker
         skeleton_data.joint_pos_2d_right_elbow.y = skeleton.joints[JOINT_RIGHT_ELBOW].proj.y * unit_scaling;
         skeleton_data.joint_pos_2d_right_elbow.z = skeleton.joints[JOINT_RIGHT_ELBOW].proj.z * unit_scaling;
 
+        skeleton_data.joint_pos_3d_right_wrist.x = skeleton.joints[JOINT_RIGHT_WRIST].real.z * unit_scaling;
+        skeleton_data.joint_pos_3d_right_wrist.y = skeleton.joints[JOINT_RIGHT_WRIST].real.x * unit_scaling;
+        skeleton_data.joint_pos_3d_right_wrist.z = skeleton.joints[JOINT_RIGHT_WRIST].real.y * unit_scaling;
+        skeleton_data.joint_pos_2d_right_wrist.x = skeleton.joints[JOINT_RIGHT_WRIST].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_right_wrist.y = skeleton.joints[JOINT_RIGHT_WRIST].proj.y * unit_scaling;
+        skeleton_data.joint_pos_2d_right_wrist.z = skeleton.joints[JOINT_RIGHT_WRIST].proj.z * unit_scaling;
+
         skeleton_data.joint_pos_3d_right_hand.x = skeleton.joints[JOINT_RIGHT_HAND].real.z * unit_scaling;
         skeleton_data.joint_pos_3d_right_hand.y = skeleton.joints[JOINT_RIGHT_HAND].real.x * unit_scaling;
         skeleton_data.joint_pos_3d_right_hand.z = skeleton.joints[JOINT_RIGHT_HAND].real.y * unit_scaling;
         skeleton_data.joint_pos_2d_right_hand.x = skeleton.joints[JOINT_RIGHT_HAND].proj.x * unit_scaling;
         skeleton_data.joint_pos_2d_right_hand.y = skeleton.joints[JOINT_RIGHT_HAND].proj.y * unit_scaling;
         skeleton_data.joint_pos_2d_right_hand.z = skeleton.joints[JOINT_RIGHT_HAND].proj.z * unit_scaling;
-		
+
+        skeleton_data.joint_pos_3d_left_hip.x = skeleton.joints[JOINT_LEFT_HIP].real.z * unit_scaling;
+        skeleton_data.joint_pos_3d_left_hip.y = skeleton.joints[JOINT_LEFT_HIP].real.x * unit_scaling;
+        skeleton_data.joint_pos_3d_left_hip.z = skeleton.joints[JOINT_LEFT_HIP].real.y * unit_scaling;
+        skeleton_data.joint_pos_2d_left_hip.x = skeleton.joints[JOINT_LEFT_HIP].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_left_hip.y = skeleton.joints[JOINT_LEFT_HIP].proj.y * unit_scaling;
+        skeleton_data.joint_pos_2d_left_hip.z = skeleton.joints[JOINT_LEFT_HIP].proj.z * unit_scaling;
+
+        skeleton_data.joint_pos_3d_left_knee.x = skeleton.joints[JOINT_LEFT_KNEE].real.z * unit_scaling;
+        skeleton_data.joint_pos_3d_left_knee.y = skeleton.joints[JOINT_LEFT_KNEE].real.x * unit_scaling;
+        skeleton_data.joint_pos_3d_left_knee.z = skeleton.joints[JOINT_LEFT_KNEE].real.y * unit_scaling;
+        skeleton_data.joint_pos_2d_left_knee.x = skeleton.joints[JOINT_LEFT_KNEE].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_left_knee.y = skeleton.joints[JOINT_LEFT_KNEE].proj.y * unit_scaling;
+        skeleton_data.joint_pos_2d_left_knee.z = skeleton.joints[JOINT_LEFT_KNEE].proj.z * unit_scaling;
+
+        skeleton_data.joint_pos_3d_left_ankle.x = skeleton.joints[JOINT_LEFT_ANKLE].real.z * unit_scaling;
+        skeleton_data.joint_pos_3d_left_ankle.y = skeleton.joints[JOINT_LEFT_ANKLE].real.x * unit_scaling;
+        skeleton_data.joint_pos_3d_left_ankle.z = skeleton.joints[JOINT_LEFT_ANKLE].real.y * unit_scaling;
+        skeleton_data.joint_pos_2d_left_ankle.x = skeleton.joints[JOINT_LEFT_ANKLE].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_left_ankle.y = skeleton.joints[JOINT_LEFT_ANKLE].proj.y * unit_scaling;
+        skeleton_data.joint_pos_2d_left_ankle.z = skeleton.joints[JOINT_LEFT_ANKLE].proj.z * unit_scaling;
+
+        skeleton_data.joint_pos_3d_right_hip.x = skeleton.joints[JOINT_RIGHT_HIP].real.z * unit_scaling;
+        skeleton_data.joint_pos_3d_right_hip.y = skeleton.joints[JOINT_RIGHT_HIP].real.x * unit_scaling;
+        skeleton_data.joint_pos_3d_right_hip.z = skeleton.joints[JOINT_RIGHT_HIP].real.y * unit_scaling;
+        skeleton_data.joint_pos_2d_right_hip.x = skeleton.joints[JOINT_RIGHT_HIP].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_right_hip.y = skeleton.joints[JOINT_RIGHT_HIP].proj.y * unit_scaling;
+        skeleton_data.joint_pos_2d_right_hip.z = skeleton.joints[JOINT_RIGHT_HIP].proj.z * unit_scaling;
+
+        skeleton_data.joint_pos_3d_right_knee.x = skeleton.joints[JOINT_RIGHT_KNEE].real.z * unit_scaling;
+        skeleton_data.joint_pos_3d_right_knee.y = skeleton.joints[JOINT_RIGHT_KNEE].real.x * unit_scaling;
+        skeleton_data.joint_pos_3d_right_knee.z = skeleton.joints[JOINT_RIGHT_KNEE].real.y * unit_scaling;
+        skeleton_data.joint_pos_2d_right_knee.x = skeleton.joints[JOINT_RIGHT_KNEE].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_right_knee.y = skeleton.joints[JOINT_RIGHT_KNEE].proj.y * unit_scaling;
+        skeleton_data.joint_pos_2d_right_knee.z = skeleton.joints[JOINT_RIGHT_KNEE].proj.z * unit_scaling;
+
+        skeleton_data.joint_pos_3d_right_ankle.x = skeleton.joints[JOINT_RIGHT_ANKLE].real.z * unit_scaling;
+        skeleton_data.joint_pos_3d_right_ankle.y = skeleton.joints[JOINT_RIGHT_ANKLE].real.x * unit_scaling;
+        skeleton_data.joint_pos_3d_right_ankle.z = skeleton.joints[JOINT_RIGHT_ANKLE].real.y * unit_scaling;
+        skeleton_data.joint_pos_2d_right_ankle.x = skeleton.joints[JOINT_RIGHT_ANKLE].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_right_ankle.y = skeleton.joints[JOINT_RIGHT_ANKLE].proj.y * unit_scaling;
+        skeleton_data.joint_pos_2d_right_ankle.z = skeleton.joints[JOINT_RIGHT_ANKLE].proj.z * unit_scaling;
+
+        // Other joints:
+        //   JOINT_NONE 
+        //   left_fingertip   // available but not used in nuitrack version
+        //   right_fingertip  // available but not used in nuitrack version
+        //   left_foot        // available but not used in nuitrack version
+        //   right_foot       // available but not used in nuitrack version
 
         // Hand:  open (0), grasping (1), waving (2)
         /* TODO - see which of these actually work
@@ -691,16 +760,16 @@ namespace nuitrack_body_tracker
 
         PublishMarker(
           4, // ID
-          skeleton_data.joint_pos_3d_spine_top.x,
-          skeleton_data.joint_pos_3d_spine_top.y,
-          skeleton_data.joint_pos_3d_spine_top.z,
+          skeleton_data.joint_pos_3d_neck.x,
+          skeleton_data.joint_pos_3d_neck.y,
+          skeleton_data.joint_pos_3d_neck.z,
           0.0, 0.0, 1.0 ); // r,g,b
 
         PublishMarker(
           5, // ID
-          skeleton_data.joint_pos_3d_spine_mid.x,
-          skeleton_data.joint_pos_3d_spine_mid.y,
-          skeleton_data.joint_pos_3d_spine_mid.z,
+          skeleton_data.joint_pos_3d_waist.x,
+          skeleton_data.joint_pos_3d_waist.y,
+          skeleton_data.joint_pos_3d_waist.z,
           0.0, 1.0, 0.0 ); // r,g,b
 
       }
@@ -812,7 +881,7 @@ namespace nuitrack_body_tracker
 		camera_info.header.frame_id = camera_depth_frame_;
         camera_info.width = frame_width_;
         camera_info.height = frame_height_;
-        camera_info.distortion_model = 'plumb_bob';
+        camera_info.distortion_model = "plumb_bob";
         
 		// Aproximations:
 		//cx = camera_info.width / 2.0
