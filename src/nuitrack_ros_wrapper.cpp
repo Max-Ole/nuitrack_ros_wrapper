@@ -41,7 +41,9 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose2D.h>
 #include <sensor_msgs/Image.h>
+#include <sensor_msgs/CameraInfo.h>
 #include <visualization_msgs/Marker.h>
+
 #include <body_tracker_msgs/BodyTracker.h>       // Publish custom message
 #include <body_tracker_msgs/BodyTrackerArray.h>  // Custom message, multiple people 
 #include <body_tracker_msgs/Skeleton.h>          // Publish custom message
@@ -110,6 +112,11 @@ namespace nuitrack_body_tracker
         ("camera/color/image", 1);
       depth_cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud2>
         ("camera/depth_cloud", 1);
+	
+	  // Publish camera info
+	  camera_info_pub_ = nh_.advertise<sensor_msgs::CameraInfo>
+        ("camera/camera_info", 1);
+		
 
     }
 
@@ -235,9 +242,9 @@ namespace nuitrack_body_tracker
           //store xyz in point cloud, transforming from image coordinates, (Z Forward to X Forward)
           Vector3 cloud_point = depthSensor_->convertProjToRealCoords(col, row, fulldepthValue );
           
-          float X_World = cloud_point.x / 1000.0; // mm to meters
-          float Y_World = cloud_point.y / 1000.0;
-          float Z_World = cloud_point.z / 1000.0; 
+          float X_World = cloud_point.x * unit_scaling; // mm to meters
+          float Y_World = cloud_point.y * unit_scaling;
+          float Z_World = cloud_point.z * unit_scaling; 
           
           *out_x = Z_World;
           *out_y = -X_World;
@@ -341,7 +348,7 @@ namespace nuitrack_body_tracker
           (skeleton.joints[KEY_JOINT_TO_TRACK].proj.x - 0.5) * ASTRA_MINI_FOV_X;
         person_data.position2d.y = 
           (skeleton.joints[KEY_JOINT_TO_TRACK].proj.y - 0.5) * ASTRA_MINI_FOV_Y;
-        person_data.position2d.z = skeleton.joints[KEY_JOINT_TO_TRACK].proj.z / 1000.0;
+        person_data.position2d.z = skeleton.joints[KEY_JOINT_TO_TRACK].proj.z * unit_scaling;
 
         
         std::cout << std::setprecision(4) << std::setw(7) 
@@ -450,12 +457,12 @@ namespace nuitrack_body_tracker
                     // Get center of the face bounding box and convert projection to radians
                     // proj is 0.0 (left) --> 1.0 (right)
                     
-                    float face_center_proj_x = face_left + (face_width / 2.0);
-                    float face_center_proj_y = face_top + (face_height / 2.0);
+                    float face_center_proj_x = face_left + (face_width * 0.5);
+                    float face_center_proj_y = face_top + (face_height * 0.5);
                     person_data.face_center.x = (face_center_proj_x - 0.5) * ASTRA_MINI_FOV_X;
                     person_data.face_center.y =  (face_center_proj_y - 0.5) * ASTRA_MINI_FOV_Y;
                     // just use the skeleton location 
-                    person_data.face_center.z = skeleton.joints[JOINT_HEAD].real.z / 1000.0;
+                    person_data.face_center.z = skeleton.joints[JOINT_HEAD].real.z * unit_scaling;
                     
                     //std::cout << "DBG face_center_proj = " << face_center_proj_x << ", " <<
                     //  face_center_proj_y << std::endl;
@@ -525,54 +532,103 @@ namespace nuitrack_body_tracker
         //skeleton_data.centerOfMass.z = 0.0;
 
         // *** POSITION 3D ***
-        person_data.position3d.x = skeleton.joints[KEY_JOINT_TO_TRACK].real.z / 1000.0;
-        person_data.position3d.y = skeleton.joints[KEY_JOINT_TO_TRACK].real.x / 1000.0;
-        person_data.position3d.z = skeleton.joints[KEY_JOINT_TO_TRACK].real.y / 1000.0;
+		
+		/*
+		for ( JointType j = JointType::JOINT_HEAD ; j != JointType::JOINT_RIGHT_FOOT; ++j )
+		{
+		   Foo foo = static_cast<JointType>(j);
+		   // ...
+		}
+		
+		for joint in [skeleton_data.joint_pos_3d_head, skeleton_data.joint_pos_3d_neck, ..]
+			joint.x =
+			joint.y = ...
+			
+		TODO: 2d pos is normalized, cennvoert to pixels pos?
+		*/
+		
+        person_data.position3d.x = skeleton.joints[KEY_JOINT_TO_TRACK].real.z * unit_scaling;
+        person_data.position3d.y = skeleton.joints[KEY_JOINT_TO_TRACK].real.x * unit_scaling;
+        person_data.position3d.z = skeleton.joints[KEY_JOINT_TO_TRACK].real.y * unit_scaling;
  
        
-        skeleton_data.joint_position_head.x = skeleton.joints[JOINT_HEAD].real.z / 1000.0;
-        skeleton_data.joint_position_head.y = skeleton.joints[JOINT_HEAD].real.x / 1000.0;
-        skeleton_data.joint_position_head.z = skeleton.joints[JOINT_HEAD].real.y / 1000.0;
+        skeleton_data.joint_pos_3d_head.x = skeleton.joints[JOINT_HEAD].real.z * unit_scaling;
+        skeleton_data.joint_pos_3d_head.y = skeleton.joints[JOINT_HEAD].real.x * unit_scaling;
+        skeleton_data.joint_pos_3d_head.z = skeleton.joints[JOINT_HEAD].real.y * unit_scaling;
+		skeleton_data.joint_pos_2d_head.x = skeleton.joints[JOINT_HEAD].proj.z * unit_scaling;
+        skeleton_data.joint_pos_2d_head.y = skeleton.joints[JOINT_HEAD].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_head.z = skeleton.joints[JOINT_HEAD].proj.y * unit_scaling;
 
-        skeleton_data.joint_position_neck.x = skeleton.joints[JOINT_NECK].real.z / 1000.0;
-        skeleton_data.joint_position_neck.y = skeleton.joints[JOINT_NECK].real.x / 1000.0;
-        skeleton_data.joint_position_neck.z = skeleton.joints[JOINT_NECK].real.y / 1000.0;
+        skeleton_data.joint_pos_3d_neck.x = skeleton.joints[JOINT_NECK].real.z * unit_scaling;
+        skeleton_data.joint_pos_3d_neck.y = skeleton.joints[JOINT_NECK].real.x * unit_scaling;
+        skeleton_data.joint_pos_3d_neck.z = skeleton.joints[JOINT_NECK].real.y * unit_scaling;
+		skeleton_data.joint_pos_2d_neck.x = skeleton.joints[JOINT_NECK].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_neck.y = skeleton.joints[JOINT_NECK].proj.y * unit_scaling;
+        skeleton_data.joint_pos_2d_neck.z = skeleton.joints[JOINT_NECK].proj.z * unit_scaling;
+		
+        skeleton_data.joint_pos_3d_spine_top.x = skeleton.joints[JOINT_TORSO].real.z * unit_scaling;
+        skeleton_data.joint_pos_3d_spine_top.y = skeleton.joints[JOINT_TORSO].real.x * unit_scaling;
+        skeleton_data.joint_pos_3d_spine_top.z = skeleton.joints[JOINT_TORSO].real.y * unit_scaling;
+        skeleton_data.joint_pos_2d_spine_top.x = skeleton.joints[JOINT_TORSO].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_spine_top.y = skeleton.joints[JOINT_TORSO].proj.y * unit_scaling;
+        skeleton_data.joint_pos_2d_spine_top.z = skeleton.joints[JOINT_TORSO].proj.z * unit_scaling;
 
-        skeleton_data.joint_position_spine_top.x = skeleton.joints[JOINT_TORSO].real.z / 1000.0;
-        skeleton_data.joint_position_spine_top.y = skeleton.joints[JOINT_TORSO].real.x / 1000.0;
-        skeleton_data.joint_position_spine_top.z = skeleton.joints[JOINT_TORSO].real.y / 1000.0;
+        skeleton_data.joint_pos_3d_spine_mid.x = skeleton.joints[JOINT_WAIST].real.z * unit_scaling;
+        skeleton_data.joint_pos_3d_spine_mid.y = skeleton.joints[JOINT_WAIST].real.x * unit_scaling;
+        skeleton_data.joint_pos_3d_spine_mid.z = skeleton.joints[JOINT_WAIST].real.y * unit_scaling;
+        skeleton_data.joint_pos_2d_spine_mid.x = skeleton.joints[JOINT_WAIST].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_spine_mid.y = skeleton.joints[JOINT_WAIST].proj.y * unit_scaling;
+        skeleton_data.joint_pos_2d_spine_mid.z = skeleton.joints[JOINT_WAIST].proj.z * unit_scaling;
 
-        skeleton_data.joint_position_spine_mid.x = skeleton.joints[JOINT_WAIST].real.z / 1000.0;
-        skeleton_data.joint_position_spine_mid.y = skeleton.joints[JOINT_WAIST].real.x / 1000.0;
-        skeleton_data.joint_position_spine_mid.z = skeleton.joints[JOINT_WAIST].real.y / 1000.0;
+        skeleton_data.joint_pos_3d_spine_bottom.x = 0.0;  // Why different?
+        skeleton_data.joint_pos_3d_spine_bottom.y = 0.0;
+        skeleton_data.joint_pos_3d_spine_bottom.z = 0.0;
+        skeleton_data.joint_pos_2d_spine_bottom.x = 0.0;
+        skeleton_data.joint_pos_2d_spine_bottom.y = 0.0;
+        skeleton_data.joint_pos_2d_spine_bottom.z = 0.0;
 
-        skeleton_data.joint_position_spine_bottom.x = 0.0;
-        skeleton_data.joint_position_spine_bottom.y = 0.0;
-        skeleton_data.joint_position_spine_bottom.z = 0.0;
+        skeleton_data.joint_pos_3d_left_shoulder.x = skeleton.joints[JOINT_LEFT_SHOULDER].real.z * unit_scaling;
+        skeleton_data.joint_pos_3d_left_shoulder.y = skeleton.joints[JOINT_LEFT_SHOULDER].real.x * unit_scaling;
+        skeleton_data.joint_pos_3d_left_shoulder.z = skeleton.joints[JOINT_LEFT_SHOULDER].real.y * unit_scaling;
+        skeleton_data.joint_pos_2d_left_shoulder.x = skeleton.joints[JOINT_LEFT_SHOULDER].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_left_shoulder.y = skeleton.joints[JOINT_LEFT_SHOULDER].proj.y * unit_scaling;
+        skeleton_data.joint_pos_2d_left_shoulder.z = skeleton.joints[JOINT_LEFT_SHOULDER].proj.z * unit_scaling;
 
-        skeleton_data.joint_position_left_shoulder.x = skeleton.joints[JOINT_LEFT_SHOULDER].real.z / 1000.0;
-        skeleton_data.joint_position_left_shoulder.y = skeleton.joints[JOINT_LEFT_SHOULDER].real.x / 1000.0;
-        skeleton_data.joint_position_left_shoulder.z = skeleton.joints[JOINT_LEFT_SHOULDER].real.y / 1000.0;
+        skeleton_data.joint_pos_3d_left_elbow.x = skeleton.joints[JOINT_LEFT_ELBOW].real.z * unit_scaling;
+        skeleton_data.joint_pos_3d_left_elbow.y = skeleton.joints[JOINT_LEFT_ELBOW].real.x * unit_scaling;
+        skeleton_data.joint_pos_3d_left_elbow.z = skeleton.joints[JOINT_LEFT_ELBOW].real.y * unit_scaling;
+        skeleton_data.joint_pos_2d_left_elbow.x = skeleton.joints[JOINT_LEFT_ELBOW].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_left_elbow.y = skeleton.joints[JOINT_LEFT_ELBOW].proj.y * unit_scaling;
+        skeleton_data.joint_pos_2d_left_elbow.z = skeleton.joints[JOINT_LEFT_ELBOW].proj.z * unit_scaling;
 
-        skeleton_data.joint_position_left_elbow.x = skeleton.joints[JOINT_LEFT_ELBOW].real.z / 1000.0;
-        skeleton_data.joint_position_left_elbow.y = skeleton.joints[JOINT_LEFT_ELBOW].real.x / 1000.0;
-        skeleton_data.joint_position_left_elbow.z = skeleton.joints[JOINT_LEFT_ELBOW].real.y / 1000.0;
+        skeleton_data.joint_pos_3d_left_hand.x = skeleton.joints[JOINT_LEFT_HAND].real.z * unit_scaling;
+        skeleton_data.joint_pos_3d_left_hand.y = skeleton.joints[JOINT_LEFT_HAND].real.x * unit_scaling;
+        skeleton_data.joint_pos_3d_left_hand.z = skeleton.joints[JOINT_LEFT_HAND].real.y * unit_scaling;
+        skeleton_data.joint_pos_2d_left_hand.x = skeleton.joints[JOINT_LEFT_HAND].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_left_hand.y = skeleton.joints[JOINT_LEFT_HAND].proj.y * unit_scaling;
+        skeleton_data.joint_pos_2d_left_hand.z = skeleton.joints[JOINT_LEFT_HAND].proj.z * unit_scaling;
 
-        skeleton_data.joint_position_left_hand.x = skeleton.joints[JOINT_LEFT_HAND].real.z / 1000.0;
-        skeleton_data.joint_position_left_hand.y = skeleton.joints[JOINT_LEFT_HAND].real.x / 1000.0;
-        skeleton_data.joint_position_left_hand.z = skeleton.joints[JOINT_LEFT_HAND].real.y / 1000.0;
+        skeleton_data.joint_pos_3d_right_shoulder.x = skeleton.joints[JOINT_RIGHT_SHOULDER].real.z * unit_scaling;
+        skeleton_data.joint_pos_3d_right_shoulder.y = skeleton.joints[JOINT_RIGHT_SHOULDER].real.x * unit_scaling;
+        skeleton_data.joint_pos_3d_right_shoulder.z = skeleton.joints[JOINT_RIGHT_SHOULDER].real.y * unit_scaling;
+        skeleton_data.joint_pos_2d_right_shoulder.x = skeleton.joints[JOINT_RIGHT_SHOULDER].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_right_shoulder.y = skeleton.joints[JOINT_RIGHT_SHOULDER].proj.y * unit_scaling;
+        skeleton_data.joint_pos_2d_right_shoulder.z = skeleton.joints[JOINT_RIGHT_SHOULDER].proj.z * unit_scaling;
 
-        skeleton_data.joint_position_right_shoulder.x = skeleton.joints[JOINT_RIGHT_SHOULDER].real.z / 1000.0;
-        skeleton_data.joint_position_right_shoulder.y = skeleton.joints[JOINT_RIGHT_SHOULDER].real.x / 1000.0;
-        skeleton_data.joint_position_right_shoulder.z = skeleton.joints[JOINT_RIGHT_SHOULDER].real.y / 1000.0;
+        skeleton_data.joint_pos_3d_right_elbow.x = skeleton.joints[JOINT_RIGHT_ELBOW].real.z * unit_scaling;
+        skeleton_data.joint_pos_3d_right_elbow.y = skeleton.joints[JOINT_RIGHT_ELBOW].real.x * unit_scaling;
+        skeleton_data.joint_pos_3d_right_elbow.z = skeleton.joints[JOINT_RIGHT_ELBOW].real.y * unit_scaling;
+        skeleton_data.joint_pos_2d_right_elbow.x = skeleton.joints[JOINT_RIGHT_ELBOW].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_right_elbow.y = skeleton.joints[JOINT_RIGHT_ELBOW].proj.y * unit_scaling;
+        skeleton_data.joint_pos_2d_right_elbow.z = skeleton.joints[JOINT_RIGHT_ELBOW].proj.z * unit_scaling;
 
-        skeleton_data.joint_position_right_elbow.x = skeleton.joints[JOINT_RIGHT_ELBOW].real.z / 1000.0;
-        skeleton_data.joint_position_right_elbow.y = skeleton.joints[JOINT_RIGHT_ELBOW].real.x / 1000.0;
-        skeleton_data.joint_position_right_elbow.z = skeleton.joints[JOINT_RIGHT_ELBOW].real.y / 1000.0;
-
-        skeleton_data.joint_position_right_hand.x = skeleton.joints[JOINT_RIGHT_HAND].real.z / 1000.0;
-        skeleton_data.joint_position_right_hand.y = skeleton.joints[JOINT_RIGHT_HAND].real.x / 1000.0;
-        skeleton_data.joint_position_right_hand.z = skeleton.joints[JOINT_RIGHT_HAND].real.y / 1000.0;
+        skeleton_data.joint_pos_3d_right_hand.x = skeleton.joints[JOINT_RIGHT_HAND].real.z * unit_scaling;
+        skeleton_data.joint_pos_3d_right_hand.y = skeleton.joints[JOINT_RIGHT_HAND].real.x * unit_scaling;
+        skeleton_data.joint_pos_3d_right_hand.z = skeleton.joints[JOINT_RIGHT_HAND].real.y * unit_scaling;
+        skeleton_data.joint_pos_2d_right_hand.x = skeleton.joints[JOINT_RIGHT_HAND].proj.x * unit_scaling;
+        skeleton_data.joint_pos_2d_right_hand.y = skeleton.joints[JOINT_RIGHT_HAND].proj.y * unit_scaling;
+        skeleton_data.joint_pos_2d_right_hand.z = skeleton.joints[JOINT_RIGHT_HAND].proj.z * unit_scaling;
+		
 
         // Hand:  open (0), grasping (1), waving (2)
         /* TODO - see which of these actually work
@@ -628,23 +684,23 @@ namespace nuitrack_body_tracker
 
         PublishMarker(
           3, // ID
-          skeleton_data.joint_position_head.x,
-          skeleton_data.joint_position_head.y,
-          skeleton_data.joint_position_head.z,
+          skeleton_data.joint_pos_3d_head.x,
+          skeleton_data.joint_pos_3d_head.y,
+          skeleton_data.joint_pos_3d_head.z,
           0.7, 0.0, 0.7 ); // r,g,b
 
         PublishMarker(
           4, // ID
-          skeleton_data.joint_position_spine_top.x,
-          skeleton_data.joint_position_spine_top.y,
-          skeleton_data.joint_position_spine_top.z,
+          skeleton_data.joint_pos_3d_spine_top.x,
+          skeleton_data.joint_pos_3d_spine_top.y,
+          skeleton_data.joint_pos_3d_spine_top.z,
           0.0, 0.0, 1.0 ); // r,g,b
 
         PublishMarker(
           5, // ID
-          skeleton_data.joint_position_spine_mid.x,
-          skeleton_data.joint_position_spine_mid.y,
-          skeleton_data.joint_position_spine_mid.z,
+          skeleton_data.joint_pos_3d_spine_mid.x,
+          skeleton_data.joint_pos_3d_spine_mid.y,
+          skeleton_data.joint_pos_3d_spine_mid.z,
           0.0, 1.0, 0.0 ); // r,g,b
 
       }
@@ -745,6 +801,55 @@ namespace nuitrack_body_tracker
         // << "  Confidence: " << joint.confidence 
         << std::endl;
     }
+	
+	/*
+	 * compute and publish camera info
+	 * camera info doesn't change over time
+	 */
+	void publishCameraInfo(){
+		sensor_msgs::CameraInfo camera_info;
+		camera_info.header.stamp = ros::Time::now();
+		camera_info.header.frame_id = camera_depth_frame_;
+        camera_info.width = frame_width_;
+        camera_info.height = frame_height_;
+        camera_info.distortion_model = 'plumb_bob';
+        
+		// Aproximations:
+		//cx = camera_info.width / 2.0
+        //cy = camera_info.height / 2.0
+        //fx = camera_info.width / ( 2.0 * math.tan(float(attributes['fov']) * math.pi / 360.0))
+        //fy = fx
+        Vector3 proj_1_0_0 = depthSensor_->convertRealToProjCoords(1.0, 0.0, 0.0);
+        Vector3 proj_0_1_0 = depthSensor_->convertRealToProjCoords(0.0, 1.0, 0.0);
+        Vector3 proj_0_0_1 = depthSensor_->convertRealToProjCoords(0.0, 0.0, 1.0);
+		double fx = proj_1_0_0.x;
+		double fy = proj_0_1_0.y;
+		double cx = proj_0_0_1.x;
+		double cy = proj_0_0_1.y;
+		
+		// verify
+		double sample_x = 1.51;
+		double sample_y = 1.51;
+		double sample_z = 1.51;
+        Vector3 testproj = depthSensor_->convertRealToProjCoords(sample_x, sample_y, sample_z);
+		// frame_width_  * testproj.x == fx * sample_x + cx * sample_z;
+		ROS_WARN_COND( (frame_width_ *testproj.x) - (fx*sample_x + cx*sample_z) > 0.0001, "False Camera Info: x");
+		//frame_height_ * testproj.y == fy * sample_y + cy * sample_z;
+		ROS_WARN_COND( (frame_height_*testproj.y) - (fy*sample_y + cy*sample_z) > 0.0001, "False Camera Info: y");
+		
+        camera_info.K = {	fx , 0.0, cx, 
+							0.0, fy , cy, 
+							0.0, 0.0, 1.0 	};
+        camera_info.D = {0.0, 0.0, 0.0, 0.0, 0.0};
+        camera_info.R = {	1.0, 0.0, 0.0, 
+							0.0, 1.0, 0.0, 
+							0.0, 0.0, 1.0	};
+        camera_info.P = {	fx , 0.0, cx , 0.0, 
+							0.0, fy , cy , 0.0, 
+							0.0, 0.0, 1.0, 0.0};
+
+		camera_info_pub_.publish(camera_info);
+	}
 
 
     ///////////////////////////////////////////////////////////////////////////
@@ -932,7 +1037,7 @@ namespace nuitrack_body_tracker
 
   private:
     /////////////// DATA MEMBERS /////////////////////
-
+	float unit_scaling = 0.001f; // mm to meters
     std::string _name;
     ros::NodeHandle nh_;
     std::string camera_depth_frame_;
@@ -950,6 +1055,7 @@ namespace nuitrack_body_tracker
     ros::Publisher depth_image_pub_;
     ros::Publisher color_image_pub_;
     ros::Publisher depth_cloud_pub_;
+	ros::Publisher camera_info_pub_;
 
     //ros::Publisher body_tracking_pose2d_pub_;
     //ros::Publisher body_tracking_pose3d_pub_;
