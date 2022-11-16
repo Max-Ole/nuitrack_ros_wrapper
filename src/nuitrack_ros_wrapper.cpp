@@ -276,10 +276,13 @@ namespace nuitrack_body_tracker
 
 		const uint16_t* depthPtr2 = frame->getData();
 		Vector3 centerpoint = depthSensor_->convertProjToRealCoords((int)_width*0.5, (int)_height*0.5, *(depthPtr2+ (int)(_width*_height*0.5 + _width*0.5)) );
-		if ( ((int)(848 * 480 * 0.5 + 848*0.5))-  ( (int)(_width*_height*0.5 + _width*0.5) )  > 0.00001){
-				ROS_WARN("False center pointer");
-		}
-		ROS_WARN("Center Point at x:%f , y:%f , z:%f", centerpoint.x*unit_scaling, centerpoint.y*unit_scaling, centerpoint.z*unit_scaling);
+		// if ( ((int)(848 * 480 * 0.5 + 848*0.5))-  ( (int)(_width*_height*0.5 + _width*0.5) )  > 0.00001){
+		// 		ROS_WARN("False center pointer");
+		// }
+		// ROS_WARN("Center Point at x:%f , y:%f , z:%f", centerpoint.x*unit_scaling, centerpoint.y*unit_scaling, centerpoint.z*unit_scaling);
+		const uint16_t* depthPtr3 = frame->getData();
+		Vector3 testREproj = depthSensor_->convertProjToRealCoords(279, 412, 1.214 );
+		ROS_INFO_THROTTLE( 1, "Laser x=%f, y=%f, z=%f", testREproj.x, testREproj.y, testREproj.z);
 	}
 
 	void onUserUpdate(tdv::nuitrack::UserFrame::Ptr frame)
@@ -907,22 +910,28 @@ namespace nuitrack_body_tracker
 		Vector3 proj_1_0_0 = depthSensor_->convertRealToProjCoords(1.0, 0.0, 0.0);
 		Vector3 proj_0_1_0 = depthSensor_->convertRealToProjCoords(0.0, 1.0, 0.0);
 		Vector3 proj_0_0_1 = depthSensor_->convertRealToProjCoords(0.0, 0.0, 1.0);
-		double fx = proj_1_0_0.x;
+		Vector3 proj_1_1_1 = depthSensor_->convertRealToProjCoords(1.0, 1.0, 1.0);
+
+/* 		double fx = proj_1_0_0.x;
 		double fy = proj_0_1_0.y;
 		double cx = proj_0_0_1.x;
-		double cy = proj_0_0_1.y;
-		
+		double cy = proj_0_0_1.y; */
+		double cx = proj_0_0_1.x; 		// cx = x'/z = x'/1 
+		double cy = proj_0_0_1.y; 		// cy = y'/z = y'/1	
+		double fx = proj_1_1_1.x - cx; 	// (x' - cx*z)/x = (x' - cx*1)/1
+		double fy = proj_1_1_1.y - cy; 	// (y' - cy*z)/x = (y' - cy*1)/1
+
 		// verify
 		double sample_x = 1.51;
-		double sample_y = 1.51;
-		double sample_z = 1.51;
+		double sample_y = 2.65;
+		double sample_z = 1.07;
 		Vector3 testproj = depthSensor_->convertRealToProjCoords(sample_x, sample_y, sample_z);
-	if ((frame_width_ *testproj.x) - (fx*sample_x + cx*sample_z) > 0.0001){
-			// frame_width_	* testproj.x == fx * sample_x + cx * sample_z;
+	if ((testproj.x) - (fx*sample_x + cx*sample_z) > 0.0001){
+			// testproj.x == fx * sample_x + cx * sample_z;
 		ROS_WARN_THROTTLE( 5, "False Camera Info: x");
 	}
-	if ((frame_height_*testproj.y) - (fy*sample_y + cy*sample_z) > 0.0001){
-			//frame_height_ * testproj.y == fy * sample_y + cy * sample_z;
+	if ((testproj.y) - (fy*sample_y + cy*sample_z) > 0.0001){
+			//testproj.y == fy * sample_y + cy * sample_z;
 		ROS_WARN_THROTTLE( 5, "False Camera Info: y");
 	}
 		
